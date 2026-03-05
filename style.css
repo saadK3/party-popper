@@ -405,7 +405,7 @@ body::before {
 /* ===== PERSONALISE BTN ===== */
 .personalise-btn {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   right: 24px;
   display: flex;
   align-items: center;
@@ -422,7 +422,7 @@ body::before {
   transition: all 0.25s ease;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 50;
+  z-index: 150;
 }
 
 .personalise-btn:hover {
