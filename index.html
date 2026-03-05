@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>🎉 Celebrate!</title>
+    <meta
+      name="description"
+      content="Press the party popper to celebrate something special!"
+    />
+    <meta property="og:title" content="🎉 A Celebration Just For You!" />
+    <meta
+      property="og:description"
+      content="Someone made this just for you. Press the popper!"
+    />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Stars background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Main app -->
+    <div class="app" id="app">
+      <!-- Top greeting -->
+      <div class="greeting" id="greeting">
+        <p class="greeting-label" id="greetingLabel">For my vuwww ✨</p>
+      </div>
+
+      <!-- Center stage -->
+      <div class="stage">
+        <!-- Person name -->
+        <h1 class="name" id="personName"></h1>
+
+        <!-- The popper button -->
+        <div class="popper-wrap" id="popperWrap">
+          <button
+            class="popper-btn"
+            id="popperBtn"
+            aria-label="Pop the party popper!"
+          >
+            <span class="popper-emoji" id="popperEmoji">🎉</span>
+            <div class="popper-ring ring1"></div>
+            <div class="popper-ring ring2"></div>
+            <div class="popper-ring ring3"></div>
+            <div class="glow"></div>
+          </button>
+          <p class="press-hint" id="pressHint">Tap to celebrate!</p>
+        </div>
+
+        <!-- Message that appears after pop -->
+        <div class="message-wrap" id="messageWrap">
+          <p class="occasion" id="occasionLabel"></p>
+          <p class="custom-message" id="customMessage"></p>
+        </div>
+      </div>
+
+      <!-- Personalise modal trigger -->
+      <button
+        class="personalise-btn"
+        id="personaliseBtn"
+        title="Personalise this page"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          <path d="M4.93 4.93a10 10 0 0 0 0 14.14" />
+        </svg>
+        Personalise
+      </button>
+    </div>
+
+    <!-- Personalise Modal — color theme only -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal" id="modal">
+        <button class="modal-close" id="modalClose">✕</button>
+        <h2 class="modal-title">🎨 Theme</h2>
+        <p class="modal-subtitle">Pick a color vibe for the celebration</p>
+
+        <div class="form-group">
+          <div class="color-picks" id="colorPicks">
+            <button
+              class="color-pick active"
+              data-color="purple"
+              style="background: linear-gradient(135deg, #a855f7, #7c3aed)"
+            ></button>
+            <button
+              class="color-pick"
+              data-color="rose"
+              style="background: linear-gradient(135deg, #f43f5e, #e11d48)"
+            ></button>
+            <button
+              class="color-pick"
+              data-color="amber"
+              style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+            ></button>
+            <button
+              class="color-pick"
+              data-color="teal"
+              style="background: linear-gradient(135deg, #14b8a6, #0d9488)"
+            ></button>
+            <button
+              class="color-pick"
+              data-color="blue"
+              style="background: linear-gradient(135deg, #3b82f6, #2563eb)"
+            ></button>
+            <button
+              class="color-pick"
+              data-color="pink"
+              style="background: linear-gradient(135deg, #ec4899, #db2777)"
+            ></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
