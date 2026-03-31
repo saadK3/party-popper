@@ -243,6 +243,14 @@ body::before {
     pulse 0s; /* cancel pulse */
 }
 
+.popper-btn.charging, .popper-btn.charging:active {
+  animation: chargingShake 0.05s ease-in-out infinite alternate;
+  box-shadow:
+    0 0 0 calc(10px + var(--charge, 0) * 30px) var(--accent-glow),
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
 .popper-emoji {
   font-size: 72px;
   line-height: 1;
@@ -759,6 +767,16 @@ body::before {
     transform: rotate(10deg) scale(1);
   }
 }
+
+@keyframes chargingShake {
+  from {
+    transform: scale(calc(1 + var(--charge, 0) * 0.3)) translate(calc(-1px - var(--charge, 0) * 2px), calc(-1px - var(--charge, 0) * 2px)) rotate(calc(-1deg - var(--charge, 0) * 2deg));
+  }
+  to {
+    transform: scale(calc(1 + var(--charge, 0) * 0.3)) translate(calc(1px + var(--charge, 0) * 2px), calc(1px + var(--charge, 0) * 2px)) rotate(calc(1deg + var(--charge, 0) * 2deg));
+  }
+}
+
 
 @keyframes ringBurst {
   0% {

@@ -81,6 +81,8 @@ renderFromState();
 let confettiPieces = [];
 let animFrame = null;
 let confettiRunning = false;
+let windX = 0;
+let windY = 0;
 
 const COLORS_BY_THEME = {
   purple: ["#a855f7", "#7c3aed", "#e879f9", "#fbbf24", "#f9a8d4", "#ffffff"],
@@ -91,14 +93,14 @@ const COLORS_BY_THEME = {
   pink: ["#ec4899", "#f472b6", "#fbcfe8", "#a855f7", "#fbbf24", "#ffffff"],
 };
 
-function spawnConfetti(count = 120) {
+function spawnConfetti(count = 120, charge = 0) {
   const colors = COLORS_BY_THEME[state.color] || COLORS_BY_THEME.purple;
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight * 0.38;
 
   for (let i = 0; i < count; i++) {
     const angle = (Math.random() * 360 * Math.PI) / 180;
-    const speed = Math.random() * 14 + 4;
+    const speed = Math.random() * 14 + 4 + (charge * 18);
     confettiPieces.push({
       x: cx + (Math.random() - 0.5) * 40,
       y: cy + (Math.random() - 0.5) * 40,
@@ -132,6 +134,8 @@ function animateConfetti() {
 
   confettiPieces.forEach((p) => {
     p.vy += p.gravity;
+    p.vx += windX;
+    p.vy += windY;
     p.vx *= p.drag;
     p.vy *= p.drag;
     p.x += p.vx;
@@ -165,14 +169,14 @@ function animateConfetti() {
   }
 }
 
-function triggerConfetti() {
+function triggerConfetti(charge = 0) {
   if (animFrame) cancelAnimationFrame(animFrame);
-  spawnConfetti(140);
+  spawnConfetti(Math.floor(140 + charge * 200), charge);
   confettiRunning = true;
   animateConfetti();
 
   // Extra burst after 300ms
-  setTimeout(() => spawnConfetti(60), 300);
+  setTimeout(() => spawnConfetti(Math.floor(60 + charge * 80), charge), 300);
 }
 
 // ─────────────────────────────────────────────
@@ -193,7 +197,7 @@ function flashBackground() {
 // ─────────────────────────────────────────────
 // 8. Sound (Web Audio API — no external deps)
 // ─────────────────────────────────────────────
-function playPopSound() {
+function playPopSound(charge = 0) {
   try {
     const ac = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -223,8 +227,8 @@ function playPopSound() {
     const osc = ac.createOscillator();
     const oscGain = ac.createGain();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(180, ac.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(60, ac.currentTime + 0.15);
+    osc.frequency.setValueAtTime(180 + charge * 100, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(60 + charge * 40, ac.currentTime + 0.15);
     oscGain.gain.setValueAtTime(1, ac.currentTime);
     oscGain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.2);
     osc.connect(oscGain);
@@ -276,12 +280,12 @@ function randomEmoji() {
   return CELEBR_EMOJIS[Math.floor(Math.random() * CELEBR_EMOJIS.length)];
 }
 
-function doPop() {
+function doPop(charge = 0) {
   if (state.popped) {
     // Allow re-popping with more confetti
     popperEmoji.textContent = randomEmoji();
-    triggerConfetti();
-    playPopSound();
+    triggerConfetti(charge);
+    playPopSound(charge);
     return;
   }
 
@@ -290,8 +294,8 @@ function doPop() {
   popperEmoji.textContent = randomEmoji();
   pressHint.classList.add("hidden");
 
-  playPopSound();
-  triggerConfetti();
+  playPopSound(charge);
+  triggerConfetti(charge);
   flashBackground();
 
   // Show message
@@ -301,15 +305,62 @@ function doPop() {
   if (navigator.vibrate) navigator.vibrate([30, 50, 80, 50, 200]);
 }
 
-popperBtn.addEventListener("click", doPop);
-popperBtn.addEventListener(
-  "touchend",
-  (e) => {
-    e.preventDefault();
-    doPop();
-  },
-  { passive: false },
-);
+// ─────────────────────────────────────────────
+// 10. Charge-to-pop logic & Wind
+// ─────────────────────────────────────────────
+let chargeStartTime = 0;
+let chargeAnimFrame = null;
+let currentCharge = 0;
+
+function startCharge(e) {
+  if (e && e.type === "touchstart") e.preventDefault();
+  
+  if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+    DeviceOrientationEvent.requestPermission().catch(() => {});
+  }
+
+  chargeStartTime = performance.now();
+  popperBtn.classList.add("charging");
+  
+  function chargeLoop(time) {
+    const elapsed = time - chargeStartTime;
+    currentCharge = Math.min(elapsed / 1500, 1.0);
+    popperBtn.style.setProperty("--charge", currentCharge);
+    chargeAnimFrame = requestAnimationFrame(chargeLoop);
+  }
+  chargeAnimFrame = requestAnimationFrame(chargeLoop);
+}
+
+function stopCharge(e) {
+  if (e && e.type === "touchend") e.preventDefault();
+  if (!chargeAnimFrame) return; // wasn't charging
+  
+  cancelAnimationFrame(chargeAnimFrame);
+  chargeAnimFrame = null;
+  popperBtn.classList.remove("charging");
+  popperBtn.style.removeProperty("--charge");
+  
+  doPop(currentCharge);
+  currentCharge = 0;
+}
+
+popperBtn.addEventListener("pointerdown", startCharge);
+window.addEventListener("pointerup", stopCharge);
+window.addEventListener("pointercancel", stopCharge);
+
+window.addEventListener("deviceorientation", (e) => {
+  if (e.gamma === null || e.beta === null) return;
+  windX = e.gamma * 0.015;
+  windY = (e.beta - 45) * 0.015;
+});
+
+window.addEventListener("mousemove", (e) => {
+  if (window.DeviceOrientationEvent && windX !== 0) return; // prefer device
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  windX = (e.clientX - cx) * 0.0003;
+  windY = (e.clientY - cy) * 0.0003;
+});
 
 // ─────────────────────────────────────────────
 // 11. Personalise modal — color only
