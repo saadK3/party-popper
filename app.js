@@ -145,7 +145,7 @@ function spawnRainItem() {
   const cx = Math.random() * window.innerWidth;
   const colors = COLORS_BY_THEME[state.color] || COLORS_BY_THEME.purple;
   
-  const speedMult = gameState.level === 1 ? 1 : (gameState.level === 2 ? 1.4 : 1.8);
+  const speedMult = gameState.level === 1 ? 1 : (gameState.level === 2 ? 1.2 : 1.4);
   
   let type = "normal";
   if (isStar) type = "star";
@@ -155,15 +155,15 @@ function spawnRainItem() {
     x: cx,
     y: -20,
     vx: (Math.random() - 0.5) * 2,
-    vy: (Math.random() * 4 + 2) * speedMult,
+    vy: (Math.random() * 2 + 1) * speedMult, // Slowed down
     color: colors[Math.floor(Math.random() * colors.length)],
     w: Math.random() * 10 + 6,
     h: Math.random() * 5 + 4,
     rot: Math.random() * 360,
-    rotSpeed: (Math.random() - 0.5) * 8,
+    rotSpeed: (Math.random() - 0.5) * 6,
     alpha: 1,
     shape: Math.random() > 0.5 ? "rect" : "circle",
-    gravity: (0.15 + Math.random() * 0.1) * speedMult,
+    gravity: (0.05 + Math.random() * 0.05) * speedMult, // Less gravity for floatier drop
     drag: 0.98,
     type: type
   });
@@ -256,13 +256,13 @@ function animateConfetti() {
           gameState.score += 1;
         }
         
-        if (gameState.score >= 120 && !gameState.isExtreme) {
+        if (gameState.score >= 100 && !gameState.isExtreme) {
           clearInterval(rainInterval);
           $("gameScore").innerText = gameState.score;
           triggerMegaCelebration();
-        } else if (gameState.score >= 70 && gameState.level < 3) {
+        } else if (gameState.score >= 60 && gameState.level < 3) {
           gameState.level = 3;
-        } else if (gameState.score >= 30 && gameState.level < 2) {
+        } else if (gameState.score >= 25 && gameState.level < 2) {
           gameState.level = 2;
         }
         
@@ -564,10 +564,10 @@ function startGame() {
   if (rainInterval) clearInterval(rainInterval);
   rainInterval = setInterval(() => {
     if (gameState.active && !gameState.isExtreme) {
-      const drops = gameState.level === 3 ? 3 : (gameState.level === 2 ? 2 : 1);
+      const drops = gameState.level === 3 ? 6 : (gameState.level === 2 ? 4 : 2); // Increased drops
       for(let i=0; i<drops; i++) spawnRainItem();
     }
-  }, 300);
+  }, 200); // Shorter interval (faster spawn rate)
 }
 
 function endGame(won = false) {
