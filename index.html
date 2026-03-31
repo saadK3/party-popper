@@ -33,6 +33,19 @@
 
     <!-- Main app -->
     <div class="app" id="app">
+      <!-- Game HUD -->
+      <div class="game-hud hidden" id="gameHud">
+        <div class="hud-item">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-value" id="gameScore">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">LEVEL</span>
+          <span class="hud-value" id="gameLevel">1</span>
+        </div>
+        <button class="exit-game-btn" id="exitGameBtn">✕ Exit</button>
+      </div>
+
       <!-- Top greeting -->
       <div class="greeting" id="greeting">
         <p class="greeting-label" id="greetingLabel">For my vuwww ✨</p>
@@ -84,6 +97,22 @@
       Personalise
     </button>
 
+    <!-- Play Game button -->
+    <button
+      class="play-game-btn"
+      id="playGameBtn"
+      title="Play Confetti Catcher"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="6" width="20" height="12" rx="2" />
+        <path d="M6 12h4" />
+        <path d="M8 10v4" />
+        <circle cx="15" cy="13" r="1" fill="currentColor"/>
+        <circle cx="18" cy="11" r="1" fill="currentColor"/>
+      </svg>
+      Play Game
+    </button>
+
     <!-- Personalise Modal — color theme only -->
     <div class="modal-overlay" id="modalOverlay">
       <div class="modal" id="modal">
@@ -124,6 +153,18 @@
               style="background: linear-gradient(135deg, #ec4899, #db2777)"
             ></button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Win Modal -->
+    <div class="modal-overlay" id="gameOverOverlay">
+      <div class="modal" id="gameOverModal" style="text-align: center;">
+        <h2 class="modal-title" id="gameOverTitle">YOU WIN! 🎆</h2>
+        <p class="modal-subtitle">You caught incredible <strong id="finalScoreDisplay" style="color: var(--accent); font-size: 1.2rem;">0</strong> pieces!</p>
+        <div class="form-group" style="margin-top: 24px;">
+          <button class="generate-btn" id="playAgainBtn">Play Again</button>
+          <button class="share-btn" id="exitToHomeBtn" style="width:100%; margin-top:12px;">Back to Home</button>
         </div>
       </div>
     </div>

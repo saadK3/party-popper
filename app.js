@@ -128,8 +128,107 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
+let gameState = {
+  active: false,
+  score: 0,
+  level: 1,
+  basketX: window.innerWidth / 2,
+  basketWidth: 80,
+  isExtreme: false
+};
+let rainInterval = null;
+let extremeInterval = null;
+
+function spawnRainItem() {
+  const isStar = Math.random() < 0.05;
+  const isMagnet = Math.random() < 0.03;
+  const cx = Math.random() * window.innerWidth;
+  const colors = COLORS_BY_THEME[state.color] || COLORS_BY_THEME.purple;
+  
+  const speedMult = gameState.level === 1 ? 1 : (gameState.level === 2 ? 1.4 : 1.8);
+  
+  let type = "normal";
+  if (isStar) type = "star";
+  else if (isMagnet) type = "magnet";
+
+  confettiPieces.push({
+    x: cx,
+    y: -20,
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() * 4 + 2) * speedMult,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    w: Math.random() * 10 + 6,
+    h: Math.random() * 5 + 4,
+    rot: Math.random() * 360,
+    rotSpeed: (Math.random() - 0.5) * 8,
+    alpha: 1,
+    shape: Math.random() > 0.5 ? "rect" : "circle",
+    gravity: (0.15 + Math.random() * 0.1) * speedMult,
+    drag: 0.98,
+    type: type
+  });
+  
+  if (!confettiRunning) {
+    confettiRunning = true;
+    animateConfetti();
+  }
+}
+
+function spawnFireworkExplosion(x, y) {
+  const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff", "#ffffff"];
+  const explodeColor = colors[Math.floor(Math.random()*colors.length)];
+  for (let i = 0; i < 60; i++) {
+    const angle = (Math.random() * 360 * Math.PI) / 180;
+    const speed = Math.random() * 14 + 4;
+    confettiPieces.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      color: explodeColor,
+      w: 8, h: 8, rot: 0, rotSpeed: 0, alpha: 1, shape: "circle", gravity: 0.1, drag: 0.94, type: "sparks"
+    });
+  }
+  if (!confettiRunning) {
+    confettiRunning = true;
+    animateConfetti();
+  }
+}
+
+function triggerMegaCelebration() {
+  gameState.isExtreme = true;
+  document.body.classList.add("rave-bg", "extreme-shake");
+  
+  let bursts = 0;
+  extremeInterval = setInterval(() => {
+    const cx = Math.random() * window.innerWidth;
+    const cy = Math.random() * (window.innerHeight * 0.8);
+    spawnFireworkExplosion(cx, cy);
+    triggerConfetti(0.8);
+    playPopSound(1.0);
+    bursts++;
+    if (bursts > 30) {
+      clearInterval(extremeInterval);
+      document.body.classList.remove("rave-bg", "extreme-shake");
+      endGame(true);
+    }
+  }, 200);
+}
+
 function animateConfetti() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (gameState.active) {
+    gameState.basketX = Math.max(gameState.basketWidth/2, Math.min(canvas.width - gameState.basketWidth/2, gameState.basketX));
+
+    ctx.save();
+    ctx.translate(gameState.basketX, canvas.height - 100);
+    ctx.font = gameState.basketWidth > 100 ? "80px system-ui" : "50px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🪣", 0, 0);
+    ctx.restore();
+  }
+
   confettiPieces = confettiPieces.filter((p) => p.alpha > 0.02);
 
   confettiPieces.forEach((p) => {
@@ -141,6 +240,39 @@ function animateConfetti() {
     p.x += p.vx;
     p.y += p.vy;
     p.rot += p.rotSpeed;
+
+    if (gameState.active && p.alpha > 0 && p.type !== "sparks") {
+      const basketY = canvas.height - 100;
+      if (Math.abs(p.x - gameState.basketX) < gameState.basketWidth / 2 && Math.abs(p.y - basketY) < 25) {
+        p.alpha = 0;
+        
+        if (p.type === "star") {
+          gameState.score += 5;
+        } else if (p.type === "magnet") {
+          gameState.score += 1;
+          gameState.basketWidth = 140;
+          setTimeout(() => gameState.basketWidth = 80, 5000);
+        } else {
+          gameState.score += 1;
+        }
+        
+        if (gameState.score >= 120 && !gameState.isExtreme) {
+          clearInterval(rainInterval);
+          $("gameScore").innerText = gameState.score;
+          triggerMegaCelebration();
+        } else if (gameState.score >= 70 && gameState.level < 3) {
+          gameState.level = 3;
+        } else if (gameState.score >= 30 && gameState.level < 2) {
+          gameState.level = 2;
+        }
+        
+        if (!gameState.isExtreme) {
+          $("gameScore").innerText = gameState.score;
+          $("gameLevel").innerText = gameState.level;
+        }
+      }
+    }
+
     if (p.y > canvas.height + 20) {
       p.alpha = 0;
       return;
@@ -151,13 +283,26 @@ function animateConfetti() {
     ctx.globalAlpha = Math.max(0, p.alpha);
     ctx.translate(p.x, p.y);
     ctx.rotate((p.rot * Math.PI) / 180);
-    ctx.fillStyle = p.color;
-    if (p.shape === "circle") {
-      ctx.beginPath();
-      ctx.arc(0, 0, p.w / 2.2, 0, Math.PI * 2);
-      ctx.fill();
+    
+    if (p.type === "star") {
+      ctx.font = "30px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("⭐", 0, 0);
+    } else if (p.type === "magnet") {
+      ctx.font = "30px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🧲", 0, 0);
     } else {
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.fillStyle = p.color;
+      if (p.shape === "circle") {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.w / 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
     }
     ctx.restore();
   });
@@ -355,11 +500,21 @@ window.addEventListener("deviceorientation", (e) => {
 });
 
 window.addEventListener("mousemove", (e) => {
-  if (window.DeviceOrientationEvent && windX !== 0) return; // prefer device
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
-  windX = (e.clientX - cx) * 0.0003;
-  windY = (e.clientY - cy) * 0.0003;
+  if (gameState.active) {
+    gameState.basketX = e.clientX;
+  } else {
+    if (window.DeviceOrientationEvent && windX !== 0) return; // prefer device
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    windX = (e.clientX - cx) * 0.0003;
+    windY = (e.clientY - cy) * 0.0003;
+  }
+});
+
+window.addEventListener("touchmove", (e) => {
+  if (gameState.active && e.touches.length > 0) {
+    gameState.basketX = e.touches[0].clientX;
+  }
 });
 
 // ─────────────────────────────────────────────
@@ -382,21 +537,59 @@ colorPicks.forEach((pick) => {
 });
 
 // ─────────────────────────────────────────────
-// 12. Auto-pop hint animation (wiggle after 3s)
+// 12. Game Mode Logic
 // ─────────────────────────────────────────────
-setTimeout(() => {
-  if (!state.popped) {
-    popperBtn.style.transition = "transform 0.2s ease";
-    let count = 0;
-    const wiggle = setInterval(() => {
-      const dir = count % 2 === 0 ? 1 : -1;
-      popperBtn.style.transform = `rotate(${dir * 6}deg) scale(1.04)`;
-      count++;
-      if (count > 5) {
-        clearInterval(wiggle);
-        popperBtn.style.transform = "";
-        popperBtn.style.transition = "";
-      }
-    }, 120);
-  }
-}, 3500);
+const playGameBtn = $("playGameBtn");
+const exitGameBtn = $("exitGameBtn");
+const gameHud = $("gameHud");
+const gameOverOverlay = $("gameOverOverlay");
+const finalScoreDisplay = $("finalScoreDisplay");
+const playAgainBtn = $("playAgainBtn");
+const exitToHomeBtn = $("exitToHomeBtn");
+
+function startGame() {
+  gameState.active = true;
+  gameState.score = 0;
+  gameState.level = 1;
+  gameState.isExtreme = false;
+  gameState.basketWidth = 80;
+  gameState.basketX = window.innerWidth / 2;
+  $("gameScore").innerText = "0";
+  $("gameLevel").innerText = "1";
+  
+  body.classList.add("game-active");
+  gameHud.classList.remove("hidden");
+  gameOverOverlay.classList.remove("open");
+  
+  if (rainInterval) clearInterval(rainInterval);
+  rainInterval = setInterval(() => {
+    if (gameState.active && !gameState.isExtreme) {
+      const drops = gameState.level === 3 ? 3 : (gameState.level === 2 ? 2 : 1);
+      for(let i=0; i<drops; i++) spawnRainItem();
+    }
+  }, 300);
+}
+
+function endGame(won = false) {
+  gameState.active = false;
+  clearInterval(rainInterval);
+  if (extremeInterval) clearInterval(extremeInterval);
+  finalScoreDisplay.innerText = gameState.score;
+  $("gameOverTitle").innerText = won ? "YOU WIN! 🎇" : "Game Over";
+  gameOverOverlay.classList.add("open");
+}
+
+function exitGame() {
+  gameState.active = false;
+  clearInterval(rainInterval);
+  if (extremeInterval) clearInterval(extremeInterval);
+  body.classList.remove("game-active");
+  document.body.classList.remove("rave-bg", "extreme-shake");
+  gameHud.classList.add("hidden");
+  gameOverOverlay.classList.remove("open");
+}
+
+playGameBtn.addEventListener("click", startGame);
+exitGameBtn.addEventListener("click", exitGame);
+playAgainBtn.addEventListener("click", startGame);
+exitToHomeBtn.addEventListener("click", exitGame);

@@ -886,3 +886,125 @@ body::before {
     opacity: 0;
   }
 }
+
+/* ===== GAME MODE ===== */
+body.game-active .greeting,
+body.game-active .name,
+body.game-active #popperWrap,
+body.game-active .personalise-btn,
+body.game-active .play-game-btn {
+  display: none !important;
+}
+
+body:not(.game-active) .game-hud {
+  display: none !important;
+}
+
+.game-hud {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  z-index: 20;
+  animation: fadeDown 0.6s var(--transition) both;
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.hud-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 2px;
+}
+
+.hud-value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  text-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.exit-game-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.exit-game-btn:hover {
+  background: rgba(255, 100, 100, 0.3);
+}
+
+.play-game-btn {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 150;
+}
+
+.play-game-btn:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+/* ===== EXTREME CELEBRATION ===== */
+.extreme-shake {
+  animation: earthquake 0.1s linear infinite;
+}
+
+@keyframes earthquake {
+  0% { transform: translate(6px, 6px) rotate(0deg); }
+  25% { transform: translate(-6px, -10px) rotate(-1deg); }
+  50% { transform: translate(10px, -6px) rotate(2deg); }
+  75% { transform: translate(-10px, 6px) rotate(-2deg); }
+  100% { transform: translate(6px, -6px) rotate(0deg); }
+}
+
+.rave-bg {
+  animation: strobe 0.15s infinite alternate;
+}
+
+@keyframes strobe {
+  0% { background: var(--bg-dark); }
+  100% { background: var(--accent); }
+}
