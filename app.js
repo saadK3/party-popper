@@ -154,8 +154,8 @@ function spawnRainItem() {
   confettiPieces.push({
     x: cx,
     y: -20,
-    vx: (Math.random() - 0.5) * 2,
-    vy: (Math.random() * 2 + 1) * speedMult, // Slowed down
+    vx: (Math.random() - 0.5) * 1.5, // keep slight horizontal variance
+    vy: 2.5 * speedMult, // Constant competitive drop speed
     color: colors[Math.floor(Math.random() * colors.length)],
     w: Math.random() * 10 + 6,
     h: Math.random() * 5 + 4,
@@ -163,7 +163,7 @@ function spawnRainItem() {
     rotSpeed: (Math.random() - 0.5) * 6,
     alpha: 1,
     shape: Math.random() > 0.5 ? "rect" : "circle",
-    gravity: (0.05 + Math.random() * 0.05) * speedMult, // Less gravity for floatier drop
+    gravity: 0.08 * speedMult, // Constant competitive gravity
     drag: 0.98,
     type: type
   });
