@@ -277,7 +277,11 @@ function animateConfetti() {
       p.alpha = 0;
       return;
     }
-    if (p.y > canvas.height * 0.6) p.alpha -= 0.012;
+    
+    // Only fade out old confetti, not currently falling game items
+    if (!gameState.active && p.y > canvas.height * 0.6) {
+      p.alpha -= 0.012;
+    }
 
     ctx.save();
     ctx.globalAlpha = Math.max(0, p.alpha);
